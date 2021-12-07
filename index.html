@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form Validation with Constraint Validation API</title>
   <style>
-    label, input {
+    label, button.submit {
       display: block;
     }
     .error-msg {
@@ -19,14 +19,12 @@
 </head>
 <body>
   <form novalidate>
-    <label for="email">Email:
-      <input type="email" required id="email" name="email">
-    </label>
+    <label for="email">Email:</label>
+    <input type="email" required id="email" name="email">
     <span class="error-msg"></span>
-
-    <label for="country">Country:
-      <input list="countries" required id="country" name="country" minlength="4" maxlength="56">
-    </label>
+    
+    <label for="country">Country:</label>
+    <input list="countries" required id="country" name="country" minlength="4" maxlength="56">
     <span class="error-msg"></span>
     <datalist id="countries">
       <option value="Canada"></option>
@@ -35,19 +33,16 @@
       <option value="United States of America">
     </datalist>  
   
-    <label for="zipcode">Zip Code:
-      <input type="text" inputmode="numeric" id="zipcode" required pattern="(^\d{5}([ \-]\d{4})?$)|(^[ABCEGHJKLMNPRSTVXY]{1}\d{1}[A-Z]{1}[ \-]\d{1}[A-Z]{1}\d{1}$)" >
-    </label>
+    <label for="postalcode">Postal Code:</label>
+    <input type="text" inputmode="numeric" id="postalcode" required pattern="(^\d{5}([ \-]\d{4})?$)|(^[ABCEGHJKLMNPRSTVXY]{1}\d{1}[A-Z]{1}[ \-]\d{1}[A-Z]{1}\d{1}$)" >
     <span class="error-msg"></span>
 
-    <label for="password">Password:
-      <input type="password" id="password" name="password" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$">
-    </label>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$">
     <span class="error-msg"></span>
 
-    <label for="password_conf">Retype password:
-      <input type="password" id="password_conf" name="password_conf" required>
-    </label>
+    <label for="password_conf">Retype password:</label>
+    <input type="password" id="password_conf" name="password_conf" required>
     <span class="error-msg"></span>
 
     <button class="submit" type="submit">Submit</button>
@@ -77,12 +72,12 @@
 
     function validateInput(e) {
       const input = e.target;
-      const spanForInput = input.parentElement.nextElementSibling;
+      const spanForInput = input.nextElementSibling;
       input.setCustomValidity('');  // reset custom validities because these set the el to "invalid"
       input.classList.remove('error');  // remove the error message. will only put one back if it is not valid
       spanForInput.textContent = '';  // remove the error message. will only put one back if it is not valid
       let errorMsg;
-      if(!input.checkValidity()) {
+      if(!input.checkValidity()) {  // if HTML's native validation detects an error, provide these custom error messages:
         switch (input.id) {
         case 'email':
           if(input.validity.typeMismatch) {
@@ -100,10 +95,9 @@
             errorMsg = ('Country required');
           }
           break;
-        case 'zipcode':
+        case 'postalcode':
           if(input.validity.patternMismatch) {
-            errorMsg = ('US Zip codes must be in the following formats: 00000 or 00000-0000 or 00000 0000. Canadaian postal codes must be separated by a space or dash.');
-          }
+            errorMsg = ('US Zip codes must be in the following formats: 00000 or 00000-0000 or 00000 0000. Canadaian  postal codes must be separated by a space or dash.');          }
           else if (input.validity.valueMissing) {
             errorMsg = ('Postal code required');
           }
@@ -117,20 +111,26 @@
           }
           break;
         case 'password_conf':
-          if(input.value !== inputs[3].value) {
-            input.setCustomValidity('Passwords must match.');
-            errorMsg = ('Passwords must match.');
-          }
-          else if (input.validity.valueMissing) {
-            input.setCustomValidity('Password confirmation required');
+          if (input.validity.valueMissing) {
             errorMsg = ('Password confirmation required');
           }
           break;
         }
-      input.classList.add('error');
-      spanForInput.textContent = errorMsg;
-      } 
+        input.classList.add('error');
+        spanForInput.textContent = errorMsg;
+      }
+      // this is a custom validator:
+      if(input.id === 'password_conf' && input.value !== inputs[3].value) {
+            input.setCustomValidity('Passwords must match.');
+            errorMsg = ('Passwords must match.');
+            input.classList.add('error');
+            spanForInput.textContent = errorMsg;
+      }
+      
     }
+
+
+
   </script>
 </body>
 </html>
