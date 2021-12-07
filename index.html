@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Validation with Constraint Validation API</title>
+  <style>
+    label, input {
+      display: block;
+    }
+    .error-msg {
+      color: red;
+    }
+    .error {
+      outline: 1px solid red;
+    }
+  </style>
+</head>
+<body>
+  <form novalidate>
+    <label for="email">Email:
+      <input type="email" required id="email" name="email">
+    </label>
+    <span class="error-msg"></span>
+
+    <label for="country">Country:
+      <input list="countries" required id="country" name="country" minlength="4" maxlength="56">
+    </label>
+    <span class="error-msg"></span>
+    <datalist id="countries">
+      <option value="Canada"></option>
+      <option value="Mexico"></option>
+      <option value="Puerto Rico"></option>
+      <option value="United States of America">
+    </datalist>  
+  
+    <label for="zipcode">Zip Code:
+      <input type="text" inputmode="numeric" id="zipcode" required pattern="(^\d{5}([ \-]\d{4})?$)|(^[ABCEGHJKLMNPRSTVXY]{1}\d{1}[A-Z]{1}[ \-]\d{1}[A-Z]{1}\d{1}$)" >
+    </label>
+    <span class="error-msg"></span>
+
+    <label for="password">Password:
+      <input type="password" id="password" name="password" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$">
+    </label>
+    <span class="error-msg"></span>
+
+    <label for="password_conf">Retype password:
+      <input type="password" id="password_conf" name="password_conf" required>
+    </label>
+    <span class="error-msg"></span>
+
+    <button class="submit" type="submit">Submit</button>
+  </form>
+  <script>
+  
+    const inputs = Array.from(document.querySelectorAll('input'));
+    const form = document.querySelector('form');
+    const submit = document.querySelector('.submit');
+    inputs.forEach(input => input.addEventListener('focusout', validateInput));
+    submit.addEventListener('click', validateForm);
+
+    function validateForm(e) {
+      if (form.checkValidity()) {
+        e.preventDefault();
+        alert('High Five!');
+      }
+      else {
+        e.preventDefault();
+        alert('Fix all errors before submitting form');
+        inputs.forEach(input => {
+          const inputObj = { target: input };
+          validateInput(inputObj);
+        });
+      }
+    }
+
+    function validateInput(e) {
+      const input = e.target;
+      const spanForInput = input.parentElement.nextElementSibling;
+      input.setCustomValidity('');  // reset custom validities because these set the el to "invalid"
+      input.classList.remove('error');  // remove the error message. will only put one back if it is not valid
+      spanForInput.textContent = '';  // remove the error message. will only put one back if it is not valid
+      let errorMsg;
+      if(!input.checkValidity()) {
+        switch (input.id) {
+        case 'email':
+          if(input.validity.typeMismatch) {
+            errorMsg = ('Email must be in the following format: username@domain.tld');
+          } 
+          else if (input.validity.valueMissing) {
+            errorMsg = ('Email address required.');
+          }
+          break;
+        case 'country':
+          if(input.validity.tooLong | input.validity.tooShort) {
+            errorMsg = ('Country name must be minimum of four characters and maximum of 56.');
+          }
+          else if (input.validity.valueMissing) {
+            errorMsg = ('Country required');
+          }
+          break;
+        case 'zipcode':
+          if(input.validity.patternMismatch) {
+            errorMsg = ('US Zip codes must be in the following formats: 00000 or 00000-0000 or 00000 0000. Canadaian postal codes must be separated by a space or dash.');
+          }
+          else if (input.validity.valueMissing) {
+            errorMsg = ('Postal code required');
+          }
+          break;
+        case 'password':
+          if(input.validity.patternMismatch) {
+            errorMsg = ('Password must be a minimum of 8 characters.  Must contain 1 uppercase letter, 1 lowercase letter, and 1 number.  May contain special characters.');
+          }
+          else if(input.validity.valueMissing) {
+            errorMsg = ('Password required');
+          }
+          break;
+        case 'password_conf':
+          if(input.value !== inputs[3].value) {
+            input.setCustomValidity('Passwords must match.');
+            errorMsg = ('Passwords must match.');
+          }
+          else if (input.validity.valueMissing) {
+            input.setCustomValidity('Password confirmation required');
+            errorMsg = ('Password confirmation required');
+          }
+          break;
+        }
+      input.classList.add('error');
+      spanForInput.textContent = errorMsg;
+      } 
+    }
+  </script>
+</body>
+</html>
